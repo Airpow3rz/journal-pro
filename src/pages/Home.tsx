@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Banners } from '../components/Banners';
 import { TaskCard } from '../components/TaskCard';
+import { TodoList } from '../components/TodoList';
 import { Icon } from '../components/ui/Icon';
 import { PageHeader } from '../components/ui/PageHeader';
 import { useCategories, useSettings, useTasks, useTemplates } from '../hooks/data';
@@ -45,6 +46,9 @@ export default function Home() {
       <button className="btn big-add" onClick={() => navigate('/tache/nouvelle')}>
         <Icon name="plus" size={26} /> Tâche
       </button>
+
+      <div className="section-title">À faire</div>
+      <TodoList />
 
       {templates.length > 0 && (
         <>

@@ -119,3 +119,48 @@ describe('stats, recherche, CSV', () => {
     expect(csv).toContain('"a;b ""c"""');
   });
 });
+
+import { keywords, splitTodoLines, suggestFromText } from './suggest';
+
+describe('suggestions « À faire »', () => {
+  const cats = [
+    { id: 'acc', name: 'Accueil', color: '', order: 0, archived: false },
+    { id: 'log', name: 'Logistique/colis', color: '', order: 1, archived: false },
+    { id: 'it', name: 'Support IT', color: '', order: 2, archived: false },
+    { id: 'form', name: 'Formation de collègues', color: '', order: 3, archived: false },
+  ];
+  it('mots-clés', () => {
+    expect(keywords('Réceptionner les colis du matin')).toEqual(['receptionner', 'coli', 'matin']);
+    expect(suggestFromText('Réceptionner les colis', [], cats)).toMatchObject({ categoryId: 'log', categoryReason: 'mots-clés' });
+    expect(suggestFromText("Réparer l'imprimante du 2e", [], cats).categoryId).toBe('it');
+    expect(suggestFromText('Former le nouvel intérimaire', [], cats).categoryId).toBe('form');
+    expect(suggestFromText('zzz', [], cats).categoryId).toBeUndefined();
+  });
+  it('apprend des tâches passées', () => {
+    const past = [task({ description: 'Mise à jour du tableau des badges', categoryId: 'acc', outOfScope: true, durationMin: 20, responsibility: 'initiative' })];
+    const s = suggestFromText('mise à jour tableau badges', past, cats);
+    expect(s).toMatchObject({ categoryId: 'acc', categoryReason: 'similaire', outOfScope: true, durationMin: 20, responsibility: 'initiative' });
+  });
+  it('découpe les lignes collées', () => {
+    expect(splitTodoLines('- colis\n\n2) imprimante\n• badge  \n[ ] appel')).toEqual(['colis', 'imprimante', 'badge', 'appel']);
+  });
+});
+
+import { hashPin, isValidPin, lockoutDelay, verifyPin } from './pin';
+
+describe('code de verrouillage', () => {
+  it('vérifie le bon code et refuse les autres', async () => {
+    const h = await hashPin('2580');
+    expect(h.pinHash).not.toContain('2580');
+    expect(await verifyPin('2580', h.pinHash, h.pinSalt)).toBe(true);
+    expect(await verifyPin('2581', h.pinHash, h.pinSalt)).toBe(false);
+  });
+  it('format et délais', () => {
+    expect(isValidPin('123')).toBe(false);
+    expect(isValidPin('1234')).toBe(true);
+    expect(isValidPin('12a4')).toBe(false);
+    expect(lockoutDelay(4)).toBe(0);
+    expect(lockoutDelay(5)).toBe(30_000);
+    expect(lockoutDelay(6)).toBe(60_000);
+  });
+});

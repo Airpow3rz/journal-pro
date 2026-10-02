@@ -1,6 +1,6 @@
 // Base IndexedDB (via Dexie). Toutes les données restent dans l'appareil.
 import Dexie, { type EntityTable } from 'dexie';
-import type { Attachment, Category, Note, Review, Settings, Task, TaskTemplate } from './schema';
+import type { Attachment, Category, Note, Review, Settings, Task, TaskTemplate, Todo } from './schema';
 
 export class JournalDB extends Dexie {
   tasks!: EntityTable<Task, 'id'>;
@@ -10,6 +10,7 @@ export class JournalDB extends Dexie {
   notes!: EntityTable<Note, 'id'>;
   reviews!: EntityTable<Review, 'id'>;
   settings!: EntityTable<Settings, 'id'>;
+  todos!: EntityTable<Todo, 'id'>;
 
   constructor() {
     super('journal-pro');
@@ -22,6 +23,10 @@ export class JournalDB extends Dexie {
       notes: 'id, date, *tags, *taskIds, updatedAt',
       reviews: 'id, periodType, periodKey',
       settings: 'id',
+    });
+    // Version 2 : liste « À faire ».
+    this.version(2).stores({
+      todos: 'id, order, doneAt',
     });
   }
 }

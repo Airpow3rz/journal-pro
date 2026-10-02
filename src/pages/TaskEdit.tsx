@@ -9,12 +9,13 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Switch } from '../components/ui/Switch';
 import { TagInput } from '../components/ui/TagInput';
 import { useToast } from '../components/ui/Toast';
-import { bumpTemplate, deleteTask, restoreTask, reusableFields, saveTask, saveTemplate } from '../db/actions';
+import { bumpTemplate, completeTodo, deleteTask, restoreTask, reusableFields, saveTask, saveTemplate } from '../db/actions';
 import { db, newId } from '../db/db';
 import { RESPONSIBILITY_LABELS, type Attachment, type ResponsibilityLevel, type TaskDraft } from '../db/schema';
 import { useCategories, useSettings, useTasks } from '../hooks/data';
 import { formatDuration, formatShort, today } from '../lib/dates';
 import { allTags } from '../lib/stats';
+import { suggestFromText, type Suggestion } from '../lib/suggest';
 
 const DURATIONS = [5, 15, 30, 60, 120];
 const DEFAULT_REQUESTERS = ['Manager', 'Responsable du site', 'Équipe boutique', 'Collègue', 'Direction client'];
@@ -49,6 +50,8 @@ export default function TaskEdit() {
   const [removed, setRemoved] = useState<string[]>([]);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  const todoId = params.get('afaire');
   const descRef = useRef<HTMLTextAreaElement>(null);
 
   const linkedNotes = useLiveQuery(() => db.notes.where('taskIds').equals(id).toArray(), [id]) ?? [];
@@ -76,6 +79,24 @@ export default function TaskEdit() {
       } else if (params.get('modele')) {
         const tpl = await db.templates.get(params.get('modele')!);
         if (tpl) { d = { ...d, ...tpl.task } as TaskDraft; bumpTemplate(tpl.id); }
+      } else if (params.get('afaire')) {
+        // Élément « À faire » coché : texte repris + suggestions tirées des tâches passées.
+        const todo = await db.todos.get(params.get('afaire')!);
+        if (todo) {
+          const [past, cats] = await Promise.all([db.tasks.orderBy('date').reverse().limit(800).toArray(), db.categories.toArray()]);
+          const sug = suggestFromText(todo.text, past, cats);
+          d = {
+            ...d,
+            description: todo.text,
+            categoryId: sug.categoryId ?? d.categoryId,
+            outOfScope: sug.outOfScope,
+            durationMin: sug.durationMin,
+            responsibility: sug.responsibility,
+            requestedBy: sug.requestedBy,
+          };
+          open = !!(sug.outOfScope || sug.durationMin || sug.responsibility || sug.requestedBy);
+          if (!cancelled) setSuggestion(sug);
+        }
       }
       if (params.get('date')) d.date = params.get('date')!;
       if (!cancelled) { setDraft(d); setDetailsOpen(open); }
@@ -115,6 +136,7 @@ export default function TaskEdit() {
     };
     const existingIds = new Set((await db.attachments.where('taskId').equals(id).primaryKeys()) as string[]);
     await saveTask(id, clean, attachments.filter((a) => !existingIds.has(a.id)), removed);
+    if (isNew && todoId) await completeTodo(todoId, id);
     toast({ text: isNew ? 'Tâche enregistrée' : 'Modifications enregistrées', action: { label: 'Dupliquer', run: () => navigate(`/tache/nouvelle?depuis=${id}`) } });
     if (window.history.length > 1) navigate(-1); else navigate('/');
   };
@@ -138,7 +160,7 @@ export default function TaskEdit() {
 
   return (
     <div className="page">
-      <PageHeader back title={isNew ? 'Nouvelle tâche' : 'Tâche'} settings={false}
+      <PageHeader back title={todoId ? 'Tâche faite' : isNew ? 'Nouvelle tâche' : 'Tâche'} settings={false}
         actions={!isNew && (
           <button className="btn icon ghost" aria-label="Dupliquer" onClick={() => navigate(`/tache/nouvelle?depuis=${id}`)}>
             <Icon name="copy" />
@@ -162,6 +184,13 @@ export default function TaskEdit() {
               </button>
             ))}
           </div>
+          {suggestion?.categoryId && draft.categoryId === suggestion.categoryId && (
+            <span className="suggest-note"><Icon name="bolt" size={13} />
+              {suggestion.similar
+                ? `Pré-rempli d’après une tâche similaire du ${formatShort(suggestion.similar.date)} : vérifiez avant d’enregistrer.`
+                : suggestion.categoryReason === 'similaire' ? 'Catégorie suggérée d’après vos tâches passées.' : 'Catégorie suggérée d’après les mots-clés.'}
+            </span>
+          )}
         </div>
 
         <label className="field">

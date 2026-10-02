@@ -2,11 +2,13 @@
 
 Journal de travail professionnel, **100 % local**, pour constituer au fil de l'année un dossier factuel en vue d'une négociation (augmentation, requalification de poste).
 
+- Liste **« À faire »** : on note en une ligne, puis on coche quand c'est fait ; le formulaire s'ouvre pré-rempli (catégorie et réglages devinés d'après vos tâches passées), à vérifier avant d'enregistrer.
 - Saisie d'une tâche en moins de 30 secondes, avec des modèles favoris et un bouton « Dupliquer ».
 - Bloc-notes en markdown, que l'on peut relier à des tâches.
 - Bilans hebdomadaires, mensuels, trimestriels et annuels générés automatiquement.
 - Dossier de négociation en PDF et export CSV.
 - Fonctionne hors ligne et s'installe sur iPhone et sur Mac (PWA).
+- Utilisable par plusieurs personnes : chacune l'installe sur son téléphone, avec ses propres données. Un écran de premier lancement demande le poste, et un **code de verrouillage** facultatif protège l'accès.
 
 ## Confidentialité
 
@@ -93,9 +95,15 @@ Pour garder une seule source de vérité, saisissez sur l'iPhone et ne faites qu
 
 ## 6. Utilisation
 
+**Premier lancement.** L'app demande l'intitulé de poste, l'employeur, la fiche de poste et le pays (jours fériés), puis propose de créer un code de verrouillage (4 à 6 chiffres). Tout reste modifiable dans les Paramètres.
+
+**Code de verrouillage.** Il est demandé à l'ouverture et après une minute en arrière-plan ; après 5 erreurs, un délai croissant s'applique. Seule une empreinte du code est stockée (PBKDF2). Le code protège l'accès à l'app mais ne chiffre pas les données. Il n'y a pas de compte en ligne : **un code oublié ne peut pas être réinitialisé**. La seule solution est « Code oublié ? → Effacer les données de cet appareil », puis importer une sauvegarde.
+
+**Liste « À faire ».** Sur l'accueil, tapez une ligne puis Entrée. Vous pouvez aussi coller ou dicter plusieurs lignes : chaque ligne devient un élément. Touchez le texte pour le modifier, ✕ pour le retirer, et le rond pour indiquer que c'est fait : le formulaire de tâche s'ouvre pré-rempli. L'élément ne disparaît de la liste qu'une fois la tâche enregistrée.
+
 | Écran | Contenu |
 |---|---|
-| **Accueil** | Bouton « + Tâche », modèles favoris, série de jours ouvrés consécutifs, aperçu de la semaine, rappels |
+| **Accueil** | Bouton « + Tâche », liste « À faire », modèles favoris, série de jours ouvrés consécutifs, aperçu de la semaine, rappels |
 | **Journal** | Toutes les tâches par jour, recherche plein texte (sans tenir compte des accents), filtres (période, catégorie, hors fiche, tags, étoile), export CSV ; onglet **Notes** |
 | **Bilans** | Semaine / mois / trimestre / année : chiffres, répartition, % hors fiche et évolution, initiatives, retours, réflexions. Le trimestre reprend les bilans mensuels, l'année les trimestriels |
 | **Dossier** | Choix et ordre du Top 10 (tâches étoilées ★), génération du PDF |

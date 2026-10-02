@@ -14,16 +14,13 @@ const DEFAULT_CATEGORIES: [string, string][] = [
   ['Autre', '#7a7a7a'],
 ];
 
+// Poste laissé vide : chaque personne le renseigne à l'écran de premier lancement.
 export const DEFAULT_SETTINGS: Settings = {
   id: 'settings',
-  jobTitle: 'Receptionist & Administrative Assistant',
-  employer: 'Prestataire',
-  client: 'Client',
-  jobDescription: [
-    "Accueil physique et téléphonique des visiteurs",
-    'Gestion du courrier et des colis',
-    'Tâches administratives courantes',
-  ],
+  jobTitle: '',
+  employer: '',
+  client: '',
+  jobDescription: [],
   theme: 'auto',
   holidayCountry: 'FR',
   customDaysOff: [],
@@ -42,6 +39,13 @@ export async function ensureSeed() {
     }
     if (!(await db.settings.get('settings'))) await db.settings.add(DEFAULT_SETTINGS);
   });
+  // Installations antérieures à l'écran de premier lancement : si des données existent déjà,
+  // on ne le réaffiche pas.
+  const s = await db.settings.get('settings');
+  if (s && s.onboarded === undefined) {
+    const hasData = (await db.tasks.count()) + (await db.notes.count()) + (await db.todos.count()) > 0;
+    if (hasData) await db.settings.update('settings', { onboarded: true });
+  }
   // Demande au navigateur de ne pas effacer les données en cas de manque d'espace.
   try { await navigator.storage?.persist?.(); } catch { /* non supporté */ }
 }

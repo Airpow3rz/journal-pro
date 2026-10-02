@@ -76,6 +76,18 @@ export interface Note {
   updatedAt: string;
 }
 
+/** Élément de la liste « À faire » : noté avant d'être fait, transformé en tâche une fois coché. */
+export interface Todo {
+  id: string;
+  text: string;
+  order: number;
+  createdAt: string;
+  /** Renseignés quand la tâche correspondante a été enregistrée. */
+  doneAt?: string;
+  taskId?: string;
+  updatedAt: string;
+}
+
 export type PeriodType = 'week' | 'month' | 'quarter' | 'year';
 
 /** Bilan d'une période : seules les réflexions sont stockées, les chiffres sont recalculés. */
@@ -114,7 +126,14 @@ export interface Settings {
   lastCategoryId?: string;
   /** Top 10 du dossier, par année : identifiants de tâches dans l'ordre choisi. */
   dossierTopIds?: Record<string, string[]>;
+  /** Écran de premier lancement terminé. */
+  onboarded?: boolean;
+  /** Code de verrouillage (empreinte PBKDF2, jamais le code en clair). Absent = pas de code. */
+  pinHash?: string;
+  pinSalt?: string;
+  /** Nombre de chiffres du code (validation automatique à la saisie). */
+  pinLength?: number;
   schemaVersion: number;
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;

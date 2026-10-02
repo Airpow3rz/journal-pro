@@ -1,6 +1,7 @@
 // Paramètres : poste et fiche de poste, catégories, modèles, jours travaillés, thème, sauvegarde.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
+import { PinSettings } from '../components/PinSettings';
 import { BufferedInput, BufferedTextarea } from '../components/ui/Buffered';
 import { Icon } from '../components/ui/Icon';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -92,7 +93,7 @@ export default function Settings() {
 
       <div className="section-title">Mon poste</div>
       <div className="card stack">
-        <label className="field">Intitulé contractuel
+        <label className="field">Intitulé de poste (contrat)
           <BufferedInput value={settings.jobTitle} onCommit={(jobTitle) => updateSettings({ jobTitle })} />
         </label>
         <div className="grid-2">
@@ -174,6 +175,9 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      <div className="section-title">Code de verrouillage</div>
+      <PinSettings settings={settings} />
 
       <div className="section-title">Saisie et affichage</div>
       <div className="card stack">

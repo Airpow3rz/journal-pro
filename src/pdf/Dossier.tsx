@@ -125,7 +125,9 @@ export function DossierDocument({ d, images }: { d: DossierData; images: Map<str
         <View style={s.hero}>
           <T style={s.eyebrow}>{`Dossier annuel d'activité ${d.year}`}</T>
           <T style={s.h1}>{st.jobTitle}</T>
-          <T style={s.muted}>{`Employé(e) par ${st.employer}, détaché(e) chez ${st.client}`}</T>
+          {(st.employer || st.client) && (
+            <T style={s.muted}>{[st.employer && `Employé(e) par ${st.employer}`, st.client && `détaché(e) chez ${st.client}`].filter(Boolean).join(', ')}</T>
+          )}
           <T style={s.small}>{`${d.periodText} · document généré le ${d.generatedOn}`}</T>
         </View>
 

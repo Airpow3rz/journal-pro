@@ -61,3 +61,27 @@ export async function bumpTemplate(id: string) {
 export async function deleteNote(id: string) {
   await db.notes.delete(id);
 }
+
+// ---------- Liste « À faire » ----------
+
+/** Ajoute un ou plusieurs éléments à la fin de la liste. */
+export async function addTodos(lines: string[]) {
+  const last = await db.todos.orderBy('order').last();
+  let order = (last?.order ?? 0) + 1;
+  const now = nowIso();
+  await db.todos.bulkAdd(lines.map((text) => ({ id: newId(), text, order: order++, createdAt: now, updatedAt: now })));
+}
+
+export async function updateTodoText(id: string, text: string) {
+  await db.todos.update(id, { text, updatedAt: nowIso() });
+}
+
+export async function deleteTodo(id: string) {
+  await db.todos.delete(id);
+}
+
+/** Marque l'élément comme fait une fois la tâche correspondante enregistrée. */
+export async function completeTodo(id: string, taskId: string) {
+  const now = nowIso();
+  await db.todos.update(id, { doneAt: now, taskId, updatedAt: now });
+}

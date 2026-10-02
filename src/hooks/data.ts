@@ -39,3 +39,8 @@ export function useReviews(): Review[] {
 }
 
 export const updateSettings = (patch: Partial<Settings>) => db.settings.update('settings', patch);
+
+/** Éléments « À faire » non encore transformés en tâches, dans l'ordre de saisie. */
+export function useOpenTodos() {
+  return useLiveQuery(() => db.todos.orderBy('order').filter((t) => !t.doneAt).toArray(), []);
+}
