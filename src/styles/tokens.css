@@ -1,0 +1,68 @@
+/* Couleurs et espacements. Le thème suit le système, sauf choix manuel (data-theme). */
+:root {
+  --bg: #f6f5f2;
+  --surface: #ffffff;
+  --surface-2: #efede8;
+  --border: #e2dfd8;
+  --text: #1d2321;
+  --text-2: #5b635f;
+  --text-3: #8a918d;
+  --accent: #2f5d50;
+  --accent-text: #ffffff;
+  --accent-soft: #e3ece8;
+  --oos: #b86e00;           /* hors fiche de poste */
+  --oos-soft: #fdf1dc;
+  --star: #d99a1e;
+  --danger: #b3261e;
+  --danger-soft: #fbe7e5;
+  --ok: #2e7d32;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .05), 0 4px 14px rgba(0, 0, 0, .05);
+  --tabbar-h: 64px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111614;
+    --surface: #1a201e;
+    --surface-2: #232a27;
+    --border: #2e3633;
+    --text: #e8ece9;
+    --text-2: #a9b2ad;
+    --text-3: #77817c;
+    --accent: #7fc4ad;
+    --accent-text: #0e1513;
+    --accent-soft: #1f3530;
+    --oos: #f0b04a;
+    --oos-soft: #3a2c13;
+    --star: #f0b84a;
+    --danger: #f2877e;
+    --danger-soft: #3b1d1b;
+    --ok: #81c784;
+    --shadow: none;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #111614;
+  --surface: #1a201e;
+  --surface-2: #232a27;
+  --border: #2e3633;
+  --text: #e8ece9;
+  --text-2: #a9b2ad;
+  --text-3: #77817c;
+  --accent: #7fc4ad;
+  --accent-text: #0e1513;
+  --accent-soft: #1f3530;
+  --oos: #f0b04a;
+  --oos-soft: #3a2c13;
+  --star: #f0b84a;
+  --danger: #f2877e;
+  --danger-soft: #3b1d1b;
+  --ok: #81c784;
+  --shadow: none;
+  color-scheme: dark;
+}
