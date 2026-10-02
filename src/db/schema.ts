@@ -18,6 +18,8 @@ export interface Category {
   order: number;
   /** Une catégorie déjà utilisée n'est jamais supprimée : on l'archive. */
   archived: boolean;
+  /** Les nouvelles tâches de cette catégorie sont cochées « hors fiche de poste » par défaut. */
+  outOfScopeDefault?: boolean;
 }
 
 export interface Task {
@@ -162,6 +164,8 @@ export interface Settings {
   pinLength?: number;
   /** Tâches quotidiennes (absent = aucune). */
   recurring?: RecurringTask[];
+  /** Durée de travail hebdomadaire du contrat (pour convertir les heures en jours/mois). Défaut : 35 h. */
+  weeklyHours?: number;
   /** Compteurs du jour (absent = compteurs par défaut). */
   counters?: CounterDef[];
   schemaVersion: number;

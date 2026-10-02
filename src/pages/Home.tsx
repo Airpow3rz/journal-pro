@@ -51,7 +51,7 @@ export default function Home() {
       <div className="section-title">À faire</div>
       <TodoList />
 
-      <div className="section-title">Compteurs du jour</div>
+      <div className="section-title" id="compteurs">Compteurs du jour</div>
       <DailyCounters />
 
       {templates.length > 0 && (

@@ -105,6 +105,16 @@ Pour garder une seule source de vérité, saisissez sur l'iPhone et ne faites qu
 
 **Compteurs du jour.** Sur l'accueil, utilisez − / + ou tapez directement le nombre ; les flèches permettent de compléter un jour précédent. Les compteurs se modifient dans Paramètres → Compteurs du jour (renommer, ajouter, réordonner, masquer). Les totaux apparaissent dans les bilans (avec la comparaison à la période précédente) et dans le dossier PDF (total, moyenne par jour, record). Export CSV dans Paramètres → Sauvegarde.
 
+**Hors fiche par défaut.** Paramètres → Catégories : « Hors fiche par défaut ? » coche automatiquement la case pour les nouvelles tâches de la catégorie (modifiable tâche par tâche).
+
+**Équivalent temps plein.** Les heures hors fiche sont converties en jours ou mois de travail (base : durée hebdomadaire réglable dans Paramètres → Mon poste, 35 h par défaut). Affiché dans les bilans et le dossier.
+
+**Argumentaire automatique.** L'écran Dossier et le PDF contiennent « Mes arguments clés » : des phrases rédigées à partir de vos chiffres (volume, hors fiche, remplacements, formations, initiatives, impacts, compteurs, retours). Bouton « Copier » pour les réutiliser.
+
+**Graphiques.** Dans les bilans : évolution sur la période (tâches avec la part hors fiche, ou un compteur au choix) et moyenne par jour de la semaine avec le jour le plus chargé. Le PDF inclut l'évolution mensuelle des tâches.
+
+**Rappels sur l'accueil.** À partir de 17 h un jour travaillé, si aucune tâche ou aucun compteur n'est saisi (masquable pour la journée). Une fois par mois, bouton « Sauvegarder » directement sur l'accueil.
+
 **Liste « À faire ».** Sur l'accueil, tapez une ligne puis Entrée. Vous pouvez aussi coller ou dicter plusieurs lignes : chaque ligne devient un élément. Touchez le texte pour le modifier, ✕ pour le retirer, et le rond pour indiquer que c'est fait : le formulaire de tâche s'ouvre pré-rempli. L'élément ne disparaît de la liste qu'une fois la tâche enregistrée.
 
 | Écran | Contenu |

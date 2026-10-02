@@ -5,6 +5,8 @@ import { formatMedium, today } from '../lib/dates';
 import { periodLabel, periodRange } from '../lib/periods';
 import { computeStats, skillCounts, tasksInRange, type PeriodStats } from '../lib/stats';
 import { countWorkingDays } from '../lib/workdays';
+import { buildPitch } from '../lib/pitch';
+import { workEquivalent } from '../lib/worktime';
 
 export interface AnnexItem {
   code: string; // "A1", "A2"…
@@ -30,6 +32,12 @@ export interface DossierData {
   annexes: AnnexItem[];
   /** Totaux annuels des compteurs du jour (seulement ceux utilisés). */
   volumes: CounterTotal[];
+  /** Phrases d'argumentaire générées à partir des chiffres. */
+  pitch: string[];
+  /** Équivalent temps plein des heures hors fiche ("≈ 2,6 mois…"), vide si non significatif. */
+  outOfScopeEquivalent: string;
+  /** Tâches par mois (total et hors fiche), de janvier au dernier mois écoulé. */
+  months: { label: string; count: number; outOfScope: number }[];
   categoryName: (id: string) => string;
 }
 
@@ -97,10 +105,23 @@ export function buildDossierData(year: string, allTasks: Task[], categories: Cat
   const achievementsSrc = big.length ? big : yearReviews.filter((r) => r.periodType === 'month' && r.mainAchievement.trim());
   const achievements = achievementsSrc.map((r) => ({ period: periodLabel(r.periodType, r.periodKey), text: r.mainAchievement.trim() }));
 
+  const volumes = counterTotals(counts, allCounters(settings), start, end).filter((v) => v.total > 0);
+  const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  const lastMonth = Number(lastDay.slice(5, 7));
+  const months = MONTHS.slice(0, lastMonth).map((label, i) => {
+    const prefix = `${year}-${String(i + 1).padStart(2, '0')}`;
+    const list = tasks.filter((t) => t.date.startsWith(prefix));
+    return { label, count: list.length, outOfScope: list.filter((t) => t.outOfScope).length };
+  });
+
   return {
-    year, settings, stats, quarters, categoryReality, outOfScopeExamples, top, feedbacks, annexes, learned, achievements, categoryName,
+    year, settings, volumes, months,
+    pitch: buildPitch({
+      year, tasks, categories, stats, volumes, weeklyHours: settings.weeklyHours,
+      quarterOosPct: quarters.map((q) => (q.stats.count ? q.stats.outOfScopePct : null)),
+    }),
+    outOfScopeEquivalent: workEquivalent(stats.outOfScopeMin, settings.weeklyHours).label, stats, quarters, categoryReality, outOfScopeExamples, top, feedbacks, annexes, learned, achievements, categoryName,
     skills: skillCounts(tasks),
-    volumes: counterTotals(counts, allCounters(settings), start, end).filter((v) => v.total > 0),
     workingDays: countWorkingDays(start, lastDay, settings),
     periodText: `Du ${formatMedium(start)} au ${formatMedium(lastDay)}`,
     generatedOn: formatMedium(today()),

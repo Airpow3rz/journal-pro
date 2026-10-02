@@ -197,3 +197,34 @@ describe('compteurs et tâches quotidiennes', () => {
     expect(recurringToCreate('2026-10-02', s, existing)).toEqual([]);
   });
 });
+
+import { workEquivalent } from './worktime';
+
+describe('équivalent temps plein', () => {
+  it('jours et mois', () => {
+    expect(workEquivalent(30).label).toBe('');
+    expect(workEquivalent(7 * 60 * 3).label).toBe('≈ 3 jours de travail');
+    expect(workEquivalent(399 * 60).label).toBe('≈ 2,6 mois de travail à temps plein');
+    expect(workEquivalent(39 * 60, 39).days).toBe(5);
+  });
+});
+
+import { buildPitch } from './pitch';
+import { computeStats as cs } from './stats';
+
+describe('argumentaire', () => {
+  it('phrases générées', () => {
+    const cats = [{ id: 'it', name: 'Support IT', color: '', order: 0, archived: false }];
+    const tasks = [
+      task({ categoryId: 'it', outOfScope: true, durationMin: 600, responsibility: 'remplacement' }),
+      task({ categoryId: 'it', outOfScope: false, durationMin: 60, impactValue: 2, impactUnit: 'h gagnées par semaine' }),
+    ];
+    const p = buildPitch({ year: '2026', tasks, categories: cats, stats: cs(tasks, cats), quarterOosPct: [10, null, 40, null],
+      volumes: [{ counter: { id: 'sav', label: 'SAV envoyés', archived: false }, total: 12, days: 3, average: 4, max: 6 }] });
+    expect(p.join('\n')).toContain('50 % de mes tâches dépassent ma fiche de poste (1 tâche, 10 h, ≈ 1 jour de travail)');
+    expect(p.join('\n')).toContain('support IT (1)');
+    expect(p.join('\n')).toContain('passée de 10 % au 1er trimestre à 40 % au 3e trimestre');
+    expect(p.join('\n')).toContain('12 SAV envoyés');
+    expect(p.join('\n')).toContain('Impacts mesurés : 2 h gagnées par semaine');
+  });
+});

@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CategoryBars } from '../components/CategoryBars';
+import { EvolutionChart } from '../components/EvolutionChart';
 import { TaskCard } from '../components/TaskCard';
 import { Icon } from '../components/ui/Icon';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -16,6 +17,7 @@ import { childPeriods, PERIOD_LABELS, periodKey, periodLabel, periodRange, shift
 import { computeStats, deltaPoints, pct, tasksInRange } from '../lib/stats';
 import { countWorkingDays } from '../lib/workdays';
 import { allCounters, counterTotals } from '../lib/counters';
+import { workEquivalent } from '../lib/worktime';
 
 const TYPES: PeriodType[] = ['week', 'month', 'quarter', 'year'];
 
@@ -55,6 +57,7 @@ export default function Reviews() {
   const oosDelta = deltaPoints(stats.outOfScopePct, prevStats.outOfScopePct);
   const countDelta = stats.count - prevStats.count;
   const hasPrev = prevStats.count > 0;
+  const oosEquivalent = workEquivalent(stats.outOfScopeMin, settings.weeklyHours).label;
   const isCurrent = key === periodKey(type, today());
 
   const children = childPeriods(type, key).map((c) => {
@@ -83,7 +86,7 @@ export default function Reviews() {
         <div className="card kpi">
           <span className="kpi-value">{stats.count}</span>
           <span className="kpi-label">tâches</span>
-          <span className={`kpi-delta ${countDelta > 0 ? 'up' : 'down'}`}>
+          <span className={`kpi-delta ${hasPrev && countDelta > 0 ? 'up' : 'down'}`}>
             {!hasPrev ? 'pas de période précédente' : countDelta === 0 ? '= période préc.' : `${countDelta > 0 ? '+' : '−'}${Math.abs(countDelta)} vs période préc.`}
           </span>
         </div>
@@ -95,7 +98,8 @@ export default function Reviews() {
         <div className="card kpi oos" style={{ gridColumn: 'span 2' }}>
           <div className="row">
             <span className="kpi-value">{pct(stats.outOfScopePct)}</span>
-            <span className="kpi-label" style={{ flex: 1 }}>de tâches hors fiche de poste<br />({stats.outOfScopeCount} tâche{stats.outOfScopeCount > 1 ? 's' : ''}{stats.outOfScopeMin ? `, ${formatDuration(stats.outOfScopeMin)}` : ''})</span>
+            <span className="kpi-label" style={{ flex: 1 }}>de tâches hors fiche de poste<br />({stats.outOfScopeCount} tâche{stats.outOfScopeCount > 1 ? 's' : ''}{stats.outOfScopeMin ? `, ${formatDuration(stats.outOfScopeMin)}` : ''})
+              {oosEquivalent && <><br /><strong style={{ color: 'var(--oos)' }}>{oosEquivalent}</strong></>}</span>
             {hasPrev && <span className={`kpi-delta ${oosDelta.diff > 0 ? 'up' : 'down'}`} title={`Période précédente : ${pct(prevStats.outOfScopePct)}`}>{oosDelta.label}<br /><span className="muted" style={{ fontWeight: 400 }}>vs préc.</span></span>}
           </div>
           <div className="progress oos" style={{ marginTop: 8 }}><i style={{ width: `${stats.outOfScopePct}%` }} /></div>
@@ -121,6 +125,13 @@ export default function Reviews() {
               );
             })}
           </div>
+        </>
+      )}
+
+      {(stats.count > 0 || volumes.some((v) => v.total > 0)) && (
+        <>
+          <div className="section-title">Évolution</div>
+          <EvolutionChart type={type} periodKey={key} tasks={periodTasks} counts={counts} settings={settings} />
         </>
       )}
 

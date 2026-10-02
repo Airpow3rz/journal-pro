@@ -106,6 +106,11 @@ export default function Settings() {
             <BufferedInput value={settings.client} onCommit={(client) => updateSettings({ client })} placeholder="Client" />
           </label>
         </div>
+        <label className="field">Durée de travail hebdomadaire (heures)
+          <BufferedInput value={String(settings.weeklyHours ?? 35)} inputMode="decimal"
+            onCommit={(v) => { const n = Number(v.replace(',', '.')); if (n > 0 && n <= 60) updateSettings({ weeklyHours: n }); }} />
+          <span className="hint">Sert à convertir les heures hors fiche en jours ou mois de travail.</span>
+        </label>
         <label className="field">Fiche de poste contractuelle <span className="hint">Une mission par ligne. Utilisée pour la comparaison dans le dossier.</span>
           <BufferedTextarea rows={7} value={settings.jobDescription.join('\n')}
             onCommit={(v) => updateSettings({ jobDescription: v.split('\n').map((l) => l.replace(/^[-•*]\s*/, '').trim()).filter(Boolean) })} />
@@ -115,7 +120,7 @@ export default function Settings() {
       <div className="section-title">Catégories</div>
       <div className="card">
         {categories.map((c, i) => (
-          <div key={c.id} className="list-row" style={{ opacity: c.archived ? 0.5 : 1 }}>
+          <div key={c.id} className="list-row" style={{ opacity: c.archived ? 0.5 : 1, flexWrap: 'wrap' }}>
             <input type="color" value={c.color} aria-label={`Couleur de ${c.name}`} onChange={(e) => db.categories.update(c.id, { color: e.target.value })}
               style={{ width: 32, height: 32, border: 'none', background: 'none', padding: 0, flex: 'none' }} />
             <BufferedInput value={c.name} onCommit={(name) => name.trim() && db.categories.update(c.id, { name: name.trim() })} style={{ flex: 1, minHeight: 38 }} />
@@ -126,10 +131,15 @@ export default function Settings() {
               ? <button className="btn icon ghost" style={{ width: 34 }} aria-label={c.archived ? 'Réactiver' : 'Archiver'} title={c.archived ? 'Réactiver' : 'Archiver (masquée à la saisie)'}
                   onClick={() => db.categories.update(c.id, { archived: !c.archived })}><Icon name={c.archived ? 'eye' : 'x'} size={16} /></button>
               : <button className="btn icon ghost danger" style={{ width: 34 }} aria-label="Supprimer" onClick={() => deleteCat(c.id)}><Icon name="trash" size={16} /></button>}
+            <button type="button" className={`chip small oos-chip ${c.outOfScopeDefault ? 'on' : ''}`} style={{ marginLeft: 42 }}
+              aria-pressed={!!c.outOfScopeDefault}
+              onClick={() => db.categories.update(c.id, { outOfScopeDefault: !c.outOfScopeDefault })}>
+              {c.outOfScopeDefault ? '✓ Hors fiche par défaut' : 'Hors fiche par défaut ?'}
+            </button>
           </div>
         ))}
         <button className="btn small" style={{ marginTop: 8 }} onClick={addCat}><Icon name="plus" size={16} /> Ajouter une catégorie</button>
-        <p className="hint" style={{ marginBottom: 0 }}>Une catégorie déjà utilisée ne peut qu’être archivée (masquée à la saisie, conservée dans l’historique).</p>
+        <p className="hint" style={{ marginBottom: 0 }}>« Hors fiche par défaut » : les nouvelles tâches de la catégorie sont cochées hors fiche de poste (modifiable tâche par tâche). Une catégorie déjà utilisée ne peut qu’être archivée (masquée à la saisie, conservée dans l’historique).</p>
       </div>
 
       <div className="section-title">Tâches quotidiennes</div>

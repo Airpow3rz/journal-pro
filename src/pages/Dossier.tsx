@@ -13,6 +13,9 @@ import { saveFile } from '../lib/download';
 import { periodRange } from '../lib/periods';
 import { computeStats, pct, tasksInRange } from '../lib/stats';
 import { resolveTop } from '../pdf/data';
+import { buildPitch } from '../lib/pitch';
+import { allCounters, counterTotals } from '../lib/counters';
+import { useToast } from '../components/ui/Toast';
 
 export default function Dossier() {
   const tasks = useTasks() ?? [];
@@ -38,6 +41,18 @@ export default function Dossier() {
     const ids = new Set([...stats.feedbacks, ...top].map((t) => t.id));
     return (await db.attachments.toArray()).filter((a) => ids.has(a.taskId)).length;
   }, [stats.feedbacks.length, top.map((t) => t.id).join()]) ?? 0;
+
+  const counts = useLiveQuery(() => db.dailyCounts.where('date').between(start, end, true, true).toArray(), [start, end]) ?? [];
+  const pitch = useMemo(() => {
+    const quarterOosPct = [1, 2, 3, 4].map((q) => {
+      const r = periodRange('quarter', `${year}-Q${q}`);
+      const st = computeStats(tasksInRange(yearTasks, r.start, r.end), categories);
+      return st.count ? st.outOfScopePct : null;
+    });
+    return buildPitch({ year, tasks: yearTasks, categories, stats, quarterOosPct, weeklyHours: settings.weeklyHours,
+      volumes: counterTotals(counts, allCounters(settings), start, end) });
+  }, [year, yearTasks, categories, stats, counts, settings, start, end]);
+  const toast = useToast();
 
   const saveOrder = (list: Task[]) => updateSettings({ dossierTopIds: { ...(settings.dossierTopIds ?? {}), [year]: list.map((t) => t.id) } });
   const move = (i: number, delta: number) => {
@@ -100,6 +115,21 @@ export default function Dossier() {
         <div className="banner warn" style={{ marginTop: 12 }}>
           <Icon name="info" /><span className="grow">Renseignez votre fiche de poste dans les <Link to="/parametres">Paramètres</Link> pour la comparaison.</span>
         </div>
+      )}
+
+      {pitch.length > 0 && (
+        <>
+          <div className="section-title row"><span>Mes arguments clés</span><span className="spacer" />
+            <button className="btn small ghost" onClick={async () => {
+              try { await navigator.clipboard.writeText(pitch.map((p) => `• ${p}`).join('\n')); toast('Arguments copiés'); }
+              catch { toast('Copie impossible sur cet appareil'); }
+            }}><Icon name="copy" size={15} /> Copier</button>
+          </div>
+          <div className="card">
+            <ul className="pitch-list">{pitch.map((p, i) => <li key={i}>{p}</li>)}</ul>
+            <p className="hint" style={{ marginBottom: 0 }}>Rédigé automatiquement à partir de vos saisies ; repris dans le PDF.</p>
+          </div>
+        </>
       )}
 
       <div className="section-title">Top 10 des réalisations ({top.length}/10)</div>

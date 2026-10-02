@@ -19,15 +19,16 @@ const WIN_ANSI_EXTRA = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”�
 export function pdfText(s: string | number | undefined | null): string {
   if (s === undefined || s === null) return '';
   return String(s)
-    .replace(/[    ]/g, ' ')
-    .replace(/[−‐‑]/g, '-')
-    .replace(/→/g, '->')
-    .replace(/[✓✔]/g, 'v')
-    .replace(/★/g, '*')
+    .replace(/[\u202F\u2009\u2007\u200A]/g, ' ')
+    .replace(/[\u2212\u2010\u2011]/g, '-')
+    .replace(/\u2192/g, '->')
+    .replace(/\u2248 ?/g, 'env. ')
+    .replace(/[\u2713\u2714]/g, 'v')
+    .replace(/\u2605/g, '*')
     .split('')
     .map((ch) => {
       if (ch.charCodeAt(0) <= 0xff || WIN_ANSI_EXTRA.has(ch)) return ch;
-      const base = ch.normalize('NFD').replace(/[̀-ͯ]/g, '');
+      const base = ch.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       return base.length === 1 && base.charCodeAt(0) <= 0xff ? base : '';
     })
     .join('');
@@ -184,7 +185,7 @@ export function DossierDocument({ d, images }: { d: DossierData; images: Map<str
             {`${pctTxt(stats.outOfScopePct)} de mon activité dépasse ma fiche de poste`}
           </T>
           <T style={[s.small, { marginTop: 3, marginBottom: 8 }]}>
-            {`${stats.outOfScopeCount} tâches hors fiche sur ${stats.count}${stats.outOfScopeMin ? `, soit ${hours(stats.outOfScopeMin)} documentées` : ''}. Évolution par trimestre :`}
+            {`${stats.outOfScopeCount} tâches hors fiche sur ${stats.count}${stats.outOfScopeMin ? `, soit ${hours(stats.outOfScopeMin)} documentées` : ''}${d.outOfScopeEquivalent ? ` (${d.outOfScopeEquivalent})` : ''}. Évolution par trimestre :`}
           </T>
           {d.quarters.map((q) => (
             <Bar key={q.label} label={q.label} value={q.stats.outOfScopePct} max={100} color={C.oos}
@@ -203,6 +204,47 @@ export function DossierDocument({ d, images }: { d: DossierData; images: Map<str
         )}
         <Footer year={d.year} />
       </Page>
+
+      {/* ---------- Arguments clés et évolution ---------- */}
+      {d.pitch.length > 0 && (
+        <Page size="A4" style={s.page}>
+          <T style={s.h2}>Mes arguments clés</T>
+          <T style={[s.small, { marginBottom: 10 }]}>Synthèse rédigée à partir des données consignées au quotidien.</T>
+          {d.pitch.map((p, i) => (
+            <View key={i} style={[s.bullet, { marginBottom: 8 }]} wrap={false}>
+              <T style={[s.bulletDot, { fontFamily: 'Helvetica-Bold' }]}>›</T>
+              <T style={{ flex: 1, fontSize: 10.5 }}>{p}</T>
+            </View>
+          ))}
+          {d.months.some((m) => m.count > 0) && (
+            <View wrap={false}>
+              <T style={[s.h3, { marginTop: 18 }]}>Évolution mensuelle des tâches</T>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 150, borderBottomWidth: 0.5, borderBottomColor: C.ink3, marginTop: 6 }}>
+                {d.months.map((m) => {
+                  const max = Math.max(1, ...d.months.map((x) => x.count));
+                  const h = (m.count / max) * 125;
+                  const ho = m.count ? (m.outOfScope / m.count) * h : 0;
+                  return (
+                    <View key={m.label} style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end', marginHorizontal: 3 }}>
+                      <T style={{ fontSize: 7.5, color: C.ink2, marginBottom: 2 }}>{m.count ? String(m.count) : ''}</T>
+                      <View style={{ width: '70%', height: h - ho, backgroundColor: C.accent, borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+                      <View style={{ width: '70%', height: ho, backgroundColor: C.oos }} />
+                    </View>
+                  );
+                })}
+              </View>
+              <View style={{ flexDirection: 'row' }}>
+                {d.months.map((m) => <T key={m.label} style={{ flex: 1, fontSize: 7.5, color: C.ink2, textAlign: 'center', marginTop: 3, marginHorizontal: 3 }}>{m.label}</T>)}
+              </View>
+              <View style={{ flexDirection: 'row', marginTop: 8 }}>
+                <View style={{ width: 8, height: 8, backgroundColor: C.accent, marginRight: 4, marginTop: 1 }} /><T style={[s.small, { marginRight: 14 }]}>Dans la fiche de poste</T>
+                <View style={{ width: 8, height: 8, backgroundColor: C.oos, marginRight: 4, marginTop: 1 }} /><T style={s.small}>Hors fiche de poste</T>
+              </View>
+            </View>
+          )}
+          <Footer year={d.year} />
+        </Page>
+      )}
 
       {/* ---------- 2. Fiche de poste vs réalité ---------- */}
       <Page size="A4" style={s.page}>

@@ -51,6 +51,8 @@ export default function TaskEdit() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  // Tant que la case « hors fiche » n'a pas été touchée, elle suit le réglage par défaut de la catégorie.
+  const [oosTouched, setOosTouched] = useState(!!routeId);
   const todoId = params.get('afaire');
   const descRef = useRef<HTMLTextAreaElement>(null);
 
@@ -99,6 +101,10 @@ export default function TaskEdit() {
         }
       }
       if (params.get('date')) d.date = params.get('date')!;
+      if (!routeId && d.outOfScope === undefined) {
+        const cat = await db.categories.get(d.categoryId);
+        if (cat?.outOfScopeDefault) d.outOfScope = true;
+      }
       if (!cancelled) { setDraft(d); setDetailsOpen(open); }
     })();
     return () => { cancelled = true; };
@@ -179,7 +185,10 @@ export default function TaskEdit() {
           <span className="small muted" style={{ fontWeight: 500 }}>Catégorie</span>
           <div className="chips-scroll" style={{ marginTop: 5 }} ref={chipsRef}>
             {categories.map((c) => (
-              <button type="button" key={c.id} className={`chip ${draft.categoryId === c.id ? 'on' : ''}`} onClick={() => set('categoryId', c.id)}>
+              <button type="button" key={c.id} className={`chip ${draft.categoryId === c.id ? 'on' : ''}`} onClick={() => {
+                set('categoryId', c.id);
+                if (!oosTouched) set('outOfScope', !!c.outOfScopeDefault || undefined);
+              }}>
                 <span className="dot" style={{ background: c.color }} />{c.name}
               </button>
             ))}
@@ -204,7 +213,7 @@ export default function TaskEdit() {
           <summary><Icon name="right" size={18} className="chev" /> Détails <span className="hint">(facultatif)</span></summary>
           <div className="stack" style={{ paddingBottom: 8 }}>
             <div className={`oos-box ${draft.outOfScope ? 'on' : ''}`}>
-              <Switch variant="oos" checked={!!draft.outOfScope} onChange={(v) => set('outOfScope', v)}
+              <Switch variant="oos" checked={!!draft.outOfScope} onChange={(v) => { setOosTouched(true); set('outOfScope', v); }}
                 label="Hors fiche de poste" hint="Tâche qui dépasse votre contrat" />
             </div>
 
