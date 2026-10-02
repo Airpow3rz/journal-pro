@@ -3,6 +3,8 @@
 Journal de travail professionnel, **100 % local**, pour constituer au fil de l'année un dossier factuel en vue d'une négociation (augmentation, requalification de poste).
 
 - Liste **« À faire »** : on note en une ligne, puis on coche quand c'est fait ; le formulaire s'ouvre pré-rempli (catégorie et réglages devinés d'après vos tâches passées), à vérifier avant d'enregistrer.
+- **Tâches quotidiennes** ajoutées automatiquement chaque jour travaillé à « À faire ».
+- **Compteurs du jour** (visiteurs accueillis, colis reçus/envoyés, colis de valeur mis au coffre, SAV envoyés…), totalisés dans les bilans et le dossier.
 - Saisie d'une tâche en moins de 30 secondes, avec des modèles favoris et un bouton « Dupliquer ».
 - Bloc-notes en markdown, que l'on peut relier à des tâches.
 - Bilans hebdomadaires, mensuels, trimestriels et annuels générés automatiquement.
@@ -99,11 +101,15 @@ Pour garder une seule source de vérité, saisissez sur l'iPhone et ne faites qu
 
 **Code de verrouillage.** Il est demandé à l'ouverture et après une minute en arrière-plan ; après 5 erreurs, un délai croissant s'applique. Seule une empreinte du code est stockée (PBKDF2). Le code protège l'accès à l'app mais ne chiffre pas les données. Il n'y a pas de compte en ligne : **un code oublié ne peut pas être réinitialisé**. La seule solution est « Code oublié ? → Effacer les données de cet appareil », puis importer une sauvegarde.
 
+**Tâches quotidiennes.** Paramètres → Tâches quotidiennes : saisissez la tâche et choisissez les jours (L M M J V). Elle apparaît automatiquement dans « À faire » (avec une icône ⚡) chaque jour choisi, sauf les jours fériés et non travaillés. Une tâche quotidienne non cochée est remplacée le lendemain par celle du jour.
+
+**Compteurs du jour.** Sur l'accueil, utilisez − / + ou tapez directement le nombre ; les flèches permettent de compléter un jour précédent. Les compteurs se modifient dans Paramètres → Compteurs du jour (renommer, ajouter, réordonner, masquer). Les totaux apparaissent dans les bilans (avec la comparaison à la période précédente) et dans le dossier PDF (total, moyenne par jour, record). Export CSV dans Paramètres → Sauvegarde.
+
 **Liste « À faire ».** Sur l'accueil, tapez une ligne puis Entrée. Vous pouvez aussi coller ou dicter plusieurs lignes : chaque ligne devient un élément. Touchez le texte pour le modifier, ✕ pour le retirer, et le rond pour indiquer que c'est fait : le formulaire de tâche s'ouvre pré-rempli. L'élément ne disparaît de la liste qu'une fois la tâche enregistrée.
 
 | Écran | Contenu |
 |---|---|
-| **Accueil** | Bouton « + Tâche », liste « À faire », modèles favoris, série de jours ouvrés consécutifs, aperçu de la semaine, rappels |
+| **Accueil** | Bouton « + Tâche », liste « À faire », compteurs du jour, modèles favoris, série de jours ouvrés consécutifs, aperçu de la semaine, rappels |
 | **Journal** | Toutes les tâches par jour, recherche plein texte (sans tenir compte des accents), filtres (période, catégorie, hors fiche, tags, étoile), export CSV ; onglet **Notes** |
 | **Bilans** | Semaine / mois / trimestre / année : chiffres, répartition, % hors fiche et évolution, initiatives, retours, réflexions. Le trimestre reprend les bilans mensuels, l'année les trimestriels |
 | **Dossier** | Choix et ordre du Top 10 (tâches étoilées ★), génération du PDF |

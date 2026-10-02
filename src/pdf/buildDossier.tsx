@@ -26,11 +26,11 @@ async function imageToJpegDataUrl(blob: Blob, maxSide = 1600): Promise<string | 
 }
 
 export async function buildDossierPdf(year: string): Promise<{ blob: Blob; warnings: string[] }> {
-  const [tasks, categories, reviews, attachments, settings] = await Promise.all([
-    db.tasks.toArray(), db.categories.toArray(), db.reviews.toArray(), db.attachments.toArray(), db.settings.get('settings'),
+  const [tasks, categories, reviews, attachments, settings, counts] = await Promise.all([
+    db.tasks.toArray(), db.categories.toArray(), db.reviews.toArray(), db.attachments.toArray(), db.settings.get('settings'), db.dailyCounts.toArray(),
   ]);
   if (!settings) throw new Error('Réglages introuvables');
-  const data = buildDossierData(year, tasks, categories, reviews, attachments, settings);
+  const data = buildDossierData(year, tasks, categories, reviews, attachments, settings, counts);
   const warnings: string[] = [];
 
   const images = new Map<string, string>();

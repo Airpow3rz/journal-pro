@@ -253,3 +253,18 @@ details.details[open] > summary .chev { transform: rotate(90deg); }
 .onboarding .steps { display: flex; gap: 6px; margin-bottom: 18px; }
 .onboarding .steps i { flex: 1; height: 4px; border-radius: 4px; background: var(--surface-2); }
 .onboarding .steps i.on { background: var(--accent); }
+
+/* ---------- Compteurs du jour ---------- */
+.counter-row { display: flex; align-items: center; gap: 8px; min-height: 52px; border-top: 1px solid var(--border); }
+.counter-label { flex: 1; font-size: .92rem; }
+.counter-btn {
+  width: 40px; height: 40px; flex: none; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  font-size: 1.3rem; font-weight: 600; display: flex; align-items: center; justify-content: center;
+}
+.counter-btn.plus { background: var(--accent); color: var(--accent-text); border-color: transparent; }
+.counter-btn:disabled { opacity: .35; }
+.counter-btn:active { transform: scale(.94); }
+input.counter-value { width: 58px; min-height: 40px; padding: 6px; text-align: center; font-weight: 700; font-size: 1.05rem; flex: none; -moz-appearance: textfield; }
+input.counter-value::-webkit-inner-spin-button, input.counter-value::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.todo-badge { color: var(--text-3); flex: none; display: flex; }

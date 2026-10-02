@@ -85,6 +85,33 @@ export interface Todo {
   /** Renseignés quand la tâche correspondante a été enregistrée. */
   doneAt?: string;
   taskId?: string;
+  /** Élément créé automatiquement par une tâche quotidienne, pour le jour indiqué. */
+  recurringId?: string;
+  date?: string;
+  updatedAt: string;
+}
+
+/** Tâche quotidienne : ajoutée automatiquement à « À faire » les jours choisis (hors fériés). */
+export interface RecurringTask {
+  id: string;
+  text: string;
+  /** Jours de la semaine (1 = lundi … 5 = vendredi). */
+  weekdays: number[];
+  active: boolean;
+}
+
+/** Compteur du jour (visiteurs, colis…). */
+export interface CounterDef {
+  id: string;
+  label: string;
+  archived: boolean;
+}
+
+/** Valeurs des compteurs pour un jour. Identifiant = date "YYYY-MM-DD". */
+export interface DailyCount {
+  id: string;
+  date: string;
+  values: Record<string, number>;
   updatedAt: string;
 }
 
@@ -133,7 +160,11 @@ export interface Settings {
   pinSalt?: string;
   /** Nombre de chiffres du code (validation automatique à la saisie). */
   pinLength?: number;
+  /** Tâches quotidiennes (absent = aucune). */
+  recurring?: RecurringTask[];
+  /** Compteurs du jour (absent = compteurs par défaut). */
+  counters?: CounterDef[];
   schemaVersion: number;
 }
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;

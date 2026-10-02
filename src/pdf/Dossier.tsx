@@ -150,6 +150,29 @@ export function DossierDocument({ d, images }: { d: DossierData; images: Map<str
           ))}
         </View>
 
+        {d.volumes.length > 0 && (
+          <View wrap={false}>
+            <T style={s.h3}>Volume d'activité de l'année</T>
+            <View style={s.table}>
+              <View style={s.tr}>
+                <T style={[s.th, { flex: 1 }]}>Indicateur</T>
+                <T style={[s.th, { width: 70, textAlign: 'right' }]}>Total</T>
+                <T style={[s.th, { width: 100, textAlign: 'right' }]}>Moyenne / jour</T>
+                <T style={[s.th, { width: 90, textAlign: 'right' }]}>Record</T>
+              </View>
+              {d.volumes.map((v) => (
+                <View key={v.counter.id} style={s.tr}>
+                  <T style={{ flex: 1 }}>{v.counter.label}</T>
+                  <T style={{ width: 70, textAlign: 'right', fontFamily: 'Helvetica-Bold' }}>{v.total.toLocaleString('fr-FR')}</T>
+                  <T style={{ width: 100, textAlign: 'right' }}>{v.average.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}</T>
+                  <T style={{ width: 90, textAlign: 'right' }}>{v.max.toLocaleString('fr-FR')}</T>
+                </View>
+              ))}
+            </View>
+            <T style={[s.small, { marginTop: 3 }]}>Moyenne calculée sur les jours où l'indicateur a été renseigné.</T>
+          </View>
+        )}
+
         <T style={s.h3}>Répartition des tâches par catégorie</T>
         {stats.byCategory.map((c) => (
           <Bar key={c.id} label={c.name} value={c.count} max={maxCat} color={c.color}

@@ -39,7 +39,12 @@ describe('dossier PDF', () => {
     expect(pdfText('1 000 − ok ✓ 🎉 €')).toBe('1 000 - ok v  €');
   });
   it('se génère', async () => {
-    const data = buildDossierData('2026', tasks, cats, reviews, [], DEFAULT_SETTINGS);
+    const counts = Array.from({ length: 40 }, (_, i) => {
+      const date = `2026-0${1 + (i % 9)}-${String(1 + (i % 27)).padStart(2, '0')}`;
+      return { id: date, date, values: { visiteurs: 10 + (i % 7), 'colis-recus': 25 + i, 'colis-coffre': i % 3, sav: i % 2 }, updatedAt: '' };
+    });
+    const data = buildDossierData('2026', tasks, cats, reviews, [], DEFAULT_SETTINGS, counts);
+    expect(data.volumes.map((v) => v.counter.id)).toEqual(['visiteurs', 'colis-recus', 'colis-coffre', 'sav']);
     expect(data.top.length).toBeLessThanOrEqual(10);
     const buf = await renderToBuffer(<DossierDocument d={data} images={new Map()} />);
     expect(buf.subarray(0, 5).toString()).toBe('%PDF-');

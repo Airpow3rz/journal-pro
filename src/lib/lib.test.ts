@@ -164,3 +164,36 @@ describe('code de verrouillage', () => {
     expect(lockoutDelay(6)).toBe(60_000);
   });
 });
+
+import { counterTotals, countsToCsv, DEFAULT_COUNTERS } from './counters';
+import { recurringToCreate } from '../db/recurring';
+
+describe('compteurs et tâches quotidiennes', () => {
+  const counts = [
+    { id: '2026-10-01', date: '2026-10-01', values: { visiteurs: 12, 'colis-recus': 30 }, updatedAt: '' },
+    { id: '2026-10-02', date: '2026-10-02', values: { visiteurs: 8, sav: 2 }, updatedAt: '' },
+    { id: '2026-09-15', date: '2026-09-15', values: { visiteurs: 100 }, updatedAt: '' },
+  ];
+  it('totaux par période', () => {
+    const t = counterTotals(counts, DEFAULT_COUNTERS, '2026-10-01', '2026-10-31');
+    expect(t.find((x) => x.counter.id === 'visiteurs')).toMatchObject({ total: 20, days: 2, average: 10, max: 12 });
+    expect(t.find((x) => x.counter.id === 'colis-coffre')).toMatchObject({ total: 0, days: 0 });
+  });
+  it('CSV', () => {
+    const csv = countsToCsv(counts, DEFAULT_COUNTERS);
+    expect(csv.split('\r\n')[1]).toBe('15/09/2026;100;0;0;0;0');
+  });
+  it('tâches quotidiennes les jours ouvrés seulement', () => {
+    const s = { holidayCountry: 'FR' as const, customDaysOff: [], recurring: [
+      { id: 'r1', text: 'Relever le courrier', weekdays: [1, 2, 3, 4, 5], active: true },
+      { id: 'r2', text: 'Commande fournitures', weekdays: [1], active: true },
+      { id: 'r3', text: 'Inactive', weekdays: [1, 2, 3, 4, 5], active: false },
+    ] };
+    expect(recurringToCreate('2026-10-05', s, [])).toEqual(['r1', 'r2']); // lundi
+    expect(recurringToCreate('2026-10-02', s, [])).toEqual(['r1']); // vendredi
+    expect(recurringToCreate('2026-10-03', s, [])).toEqual([]); // samedi
+    expect(recurringToCreate('2026-11-11', s, [])).toEqual([]); // férié
+    const existing = [{ id: 'x', text: '', order: 0, createdAt: '', updatedAt: '', recurringId: 'r1', date: '2026-10-02' }];
+    expect(recurringToCreate('2026-10-02', s, existing)).toEqual([]);
+  });
+});

@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Banners } from '../components/Banners';
 import { TaskCard } from '../components/TaskCard';
+import { DailyCounters } from '../components/DailyCounters';
 import { TodoList } from '../components/TodoList';
 import { Icon } from '../components/ui/Icon';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -49,6 +50,9 @@ export default function Home() {
 
       <div className="section-title">À faire</div>
       <TodoList />
+
+      <div className="section-title">Compteurs du jour</div>
+      <DailyCounters />
 
       {templates.length > 0 && (
         <>

@@ -1,5 +1,6 @@
 // Prépare toutes les données du dossier annuel (logique pure, sans rendu).
-import type { Attachment, Category, Review, Settings, Task } from '../db/schema';
+import type { Attachment, Category, DailyCount, Review, Settings, Task } from '../db/schema';
+import { allCounters, counterTotals, type CounterTotal } from '../lib/counters';
 import { formatMedium, today } from '../lib/dates';
 import { periodLabel, periodRange } from '../lib/periods';
 import { computeStats, skillCounts, tasksInRange, type PeriodStats } from '../lib/stats';
@@ -27,6 +28,8 @@ export interface DossierData {
   learned: { period: string; text: string }[];
   achievements: { period: string; text: string }[];
   annexes: AnnexItem[];
+  /** Totaux annuels des compteurs du jour (seulement ceux utilisés). */
+  volumes: CounterTotal[];
   categoryName: (id: string) => string;
 }
 
@@ -39,7 +42,7 @@ export function resolveTop(yearTasks: Task[], order: string[] | undefined): Task
   return [...ordered, ...rest].slice(0, 10);
 }
 
-export function buildDossierData(year: string, allTasks: Task[], categories: Category[], reviews: Review[], attachments: Attachment[], settings: Settings): DossierData {
+export function buildDossierData(year: string, allTasks: Task[], categories: Category[], reviews: Review[], attachments: Attachment[], settings: Settings, counts: DailyCount[] = []): DossierData {
   const { start, end } = periodRange('year', year);
   const lastDay = end < today() ? end : today();
   const tasks = tasksInRange(allTasks, start, end).sort((a, b) => a.date.localeCompare(b.date));
@@ -97,6 +100,7 @@ export function buildDossierData(year: string, allTasks: Task[], categories: Cat
   return {
     year, settings, stats, quarters, categoryReality, outOfScopeExamples, top, feedbacks, annexes, learned, achievements, categoryName,
     skills: skillCounts(tasks),
+    volumes: counterTotals(counts, allCounters(settings), start, end).filter((v) => v.total > 0),
     workingDays: countWorkingDays(start, lastDay, settings),
     periodText: `Du ${formatMedium(start)} au ${formatMedium(lastDay)}`,
     generatedOn: formatMedium(today()),

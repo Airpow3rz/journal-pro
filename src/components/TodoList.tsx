@@ -69,6 +69,7 @@ function TodoItem({ todo, onCheck }: { todo: Todo; onCheck: () => void }) {
       ) : (
         <span className="todo-text" onClick={() => setEditing(true)}>{todo.text}</span>
       )}
+      {todo.recurringId && <span className="todo-badge" title="Tâche quotidienne"><Icon name="bolt" size={14} /></span>}
       <button className="btn icon ghost todo-del" aria-label={`Supprimer : ${todo.text}`} onClick={remove}><Icon name="x" size={16} /></button>
     </li>
   );

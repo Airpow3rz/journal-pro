@@ -2,6 +2,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { PinSettings } from '../components/PinSettings';
+import { CounterSettings, RecurringSettings } from '../components/RoutineSettings';
 import { BufferedInput, BufferedTextarea } from '../components/ui/Buffered';
 import { Icon } from '../components/ui/Icon';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -12,6 +13,7 @@ import { exportBackup, importBackup, markBackupDone, parseBackup } from '../db/b
 import { db, newId } from '../db/db';
 import type { HolidayCountry, ThemeChoice } from '../db/schema';
 import { updateSettings, useCategories, useSettings, useTasks, useTemplates } from '../hooks/data';
+import { allCounters, countsToCsv } from '../lib/counters';
 import { tasksToCsv } from '../lib/csv';
 import { formatMedium, formatNum, today } from '../lib/dates';
 import { saveFile } from '../lib/download';
@@ -130,6 +132,12 @@ export default function Settings() {
         <p className="hint" style={{ marginBottom: 0 }}>Une catégorie déjà utilisée ne peut qu’être archivée (masquée à la saisie, conservée dans l’historique).</p>
       </div>
 
+      <div className="section-title">Tâches quotidiennes</div>
+      <RecurringSettings settings={settings} />
+
+      <div className="section-title">Compteurs du jour</div>
+      <CounterSettings settings={settings} />
+
       <div className="section-title">Modèles de tâches favorites</div>
       <div className="card">
         {templates.length === 0 && <p className="small muted" style={{ margin: 0 }}>Dans une tâche, ouvrez « Détails » puis « Enregistrer comme modèle ».</p>}
@@ -206,6 +214,9 @@ export default function Settings() {
         <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={(e) => doImport(e.target.files?.[0])} />
         <button className="btn" onClick={() => saveFile(new Blob([tasksToCsv(tasks, categories)], { type: 'text/csv;charset=utf-8' }), `journal-taches-${today()}.csv`)}>
           <Icon name="list" size={18} /> Exporter les tâches (CSV)
+        </button>
+        <button className="btn" onClick={async () => saveFile(new Blob([countsToCsv(await db.dailyCounts.toArray(), allCounters(settings))], { type: 'text/csv;charset=utf-8' }), `journal-compteurs-${today()}.csv`)}>
+          <Icon name="chart" size={18} /> Exporter les compteurs du jour (CSV)
         </button>
       </div>
 

@@ -1,6 +1,6 @@
 // Sauvegarde et restauration JSON de toutes les données, pièces jointes comprises (en base64).
 import { db, nowIso } from './db';
-import { SCHEMA_VERSION, type Attachment, type Category, type Note, type Review, type Settings, type Task, type TaskTemplate, type Todo } from './schema';
+import { SCHEMA_VERSION, type Attachment, type Category, type Note, type Review, type Settings, type DailyCount, type Task, type TaskTemplate, type Todo } from './schema';
 
 interface SerializedAttachment extends Omit<Attachment, 'blob'> { dataBase64: string }
 
@@ -16,6 +16,8 @@ export interface BackupFile {
   settings: Settings | null;
   /** Absent des sauvegardes de la version 1. */
   todos?: Todo[];
+  /** Absent des sauvegardes antérieures à la version 3. */
+  dailyCounts?: DailyCount[];
   attachments: SerializedAttachment[];
 }
 
@@ -46,6 +48,7 @@ export async function exportBackup(): Promise<BackupFile> {
     reviews: await db.reviews.toArray(),
     settings: (await db.settings.get('settings')) ?? null,
     todos: await db.todos.toArray(),
+    dailyCounts: await db.dailyCounts.toArray(),
     attachments: await Promise.all(attachments.map(async ({ blob, ...rest }) => ({ ...rest, dataBase64: await blobToBase64(blob) }))),
   };
 }
@@ -76,7 +79,7 @@ async function mergeTable<T extends { id: string; updatedAt?: string }>(table: {
  */
 export async function importBackup(data: BackupFile, mode: 'merge' | 'replace') {
   const attachments: Attachment[] = data.attachments.map(({ dataBase64, ...rest }) => ({ ...rest, blob: base64ToBlob(dataBase64, rest.mime) }));
-  const tables = [db.tasks, db.categories, db.templates, db.notes, db.reviews, db.settings, db.attachments, db.todos];
+  const tables = [db.tasks, db.categories, db.templates, db.notes, db.reviews, db.settings, db.attachments, db.todos, db.dailyCounts];
   await db.transaction('rw', tables, async () => {
     if (mode === 'replace') {
       await Promise.all(tables.map((t) => t.clear()));
@@ -87,12 +90,14 @@ export async function importBackup(data: BackupFile, mode: 'merge' | 'replace') 
       await db.reviews.bulkPut(data.reviews ?? []);
       await db.attachments.bulkPut(attachments);
       await db.todos.bulkPut(data.todos ?? []);
+      await db.dailyCounts.bulkPut(data.dailyCounts ?? []);
       if (data.settings) await db.settings.put(data.settings);
     } else {
       await mergeTable<Task>(db.tasks as never, data.tasks);
       await mergeTable<Note>(db.notes as never, data.notes ?? []);
       await mergeTable<Review>(db.reviews as never, data.reviews ?? []);
       await mergeTable<Todo>(db.todos as never, data.todos ?? []);
+      await mergeTable<DailyCount>(db.dailyCounts as never, data.dailyCounts ?? []);
       for (const c of data.categories) if (!(await db.categories.get(c.id))) await db.categories.put(c);
       for (const t of data.templates ?? []) if (!(await db.templates.get(t.id))) await db.templates.put(t);
       for (const a of attachments) if (!(await db.attachments.get(a.id))) await db.attachments.put(a);

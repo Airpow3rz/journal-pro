@@ -15,6 +15,7 @@ import { formatDuration, formatShort, today } from '../lib/dates';
 import { childPeriods, PERIOD_LABELS, periodKey, periodLabel, periodRange, shiftPeriod } from '../lib/periods';
 import { computeStats, deltaPoints, pct, tasksInRange } from '../lib/stats';
 import { countWorkingDays } from '../lib/workdays';
+import { allCounters, counterTotals } from '../lib/counters';
 
 const TYPES: PeriodType[] = ['week', 'month', 'quarter', 'year'];
 
@@ -48,6 +49,9 @@ export default function Reviews() {
   const stats = useMemo(() => computeStats(periodTasks, categories), [periodTasks, categories]);
   const prevStats = useMemo(() => computeStats(tasksInRange(tasks, prevRange.start, prevRange.end), categories), [tasks, prevRange.start, prevRange.end, categories]);
   const workingDays = countWorkingDays(range.start, range.end, settings);
+  const counts = useLiveQuery(() => db.dailyCounts.where('date').between(prevRange.start, range.end, true, true).toArray(), [prevRange.start, range.end]) ?? [];
+  const volumes = counterTotals(counts, allCounters(settings), range.start, range.end);
+  const prevVolumes = counterTotals(counts, allCounters(settings), prevRange.start, prevRange.end);
   const oosDelta = deltaPoints(stats.outOfScopePct, prevStats.outOfScopePct);
   const countDelta = stats.count - prevStats.count;
   const hasPrev = prevStats.count > 0;
@@ -97,6 +101,28 @@ export default function Reviews() {
           <div className="progress oos" style={{ marginTop: 8 }}><i style={{ width: `${stats.outOfScopePct}%` }} /></div>
         </div>
       </div>
+
+      {volumes.some((v) => v.total > 0) && (
+        <>
+          <div className="section-title">Volumes (compteurs du jour)</div>
+          <div className="card">
+            {volumes.map((v, i) => {
+              const prev = prevVolumes[i].total;
+              const diff = v.total - prev;
+              return (
+                <div key={v.counter.id} className="legend-row" style={{ alignItems: 'baseline' }}>
+                  <span style={{ flex: 1 }}>{v.counter.label}</span>
+                  <strong style={{ fontVariantNumeric: 'tabular-nums' }}>{v.total.toLocaleString('fr-FR')}</strong>
+                  <span className="tiny muted" style={{ width: 92, textAlign: 'right' }}>
+                    {v.days ? `moy. ${v.average.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}/jour` : ''}
+                    {prev > 0 && <><br />{diff >= 0 ? '+' : '−'}{Math.abs(diff).toLocaleString('fr-FR')} vs préc.</>}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       <div className="section-title">Répartition par catégorie</div>
       <div className="card"><CategoryBars data={stats.byCategory} total={stats.count} /></div>
